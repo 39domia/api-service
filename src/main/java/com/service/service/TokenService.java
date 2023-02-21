@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 @Slf4j(topic = "TOKEN-SERVICE")
 @RequiredArgsConstructor
 public class TokenService {
+    private final TokenRepo tokenRepo;
+    private final UserRepo userRepo;
+
     @Value("${jwt.secret}")
     private String secretKey;
     @Value("${jwt.token.validity}")
@@ -32,8 +35,6 @@ public class TokenService {
     @Value("${jwt.reset.token.validity}")
     private long jwtResetTokenValidity;
 
-    private final TokenRepo tokenRepo;
-    private final UserRepo userRepo;
 
     /**
      * Generate token information
