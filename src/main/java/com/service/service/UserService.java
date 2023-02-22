@@ -153,10 +153,11 @@ public class UserService implements UserDetailsService {
      * @param id user id
      * @throws ResourceNotFoundException not found exception
      */
-    public void delete(long id) throws ResourceNotFoundException {
+    public boolean delete(long id) throws ResourceNotFoundException {
         log.info("Deleting user {} from the database", id);
         getUserById(id);
         userRepo.deleteById(id);
+        return true;
     }
 
     /**

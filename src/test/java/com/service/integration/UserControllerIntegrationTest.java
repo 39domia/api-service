@@ -1,5 +1,7 @@
-package com.service.api.controller;
+package com.service.integration;
 
+import com.service.api.controller.AuthenticationController;
+import com.service.api.controller.UserController;
 import com.service.api.form.UserForm;
 import com.service.api.response.ApiResponse;
 import com.service.exception.ResourceNotFoundException;
@@ -19,7 +21,7 @@ import java.util.Objects;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @Slf4j
-class UserControllerTest {
+class UserControllerIntegrationTest {
     @Autowired
     private AuthenticationController authenticationController;
     @Autowired

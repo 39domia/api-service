@@ -1,5 +1,6 @@
-package com.service.api.controller;
+package com.service.integration;
 
+import com.service.api.controller.AuthenticationController;
 import com.service.api.response.TokenResponse;
 import com.service.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import java.util.Objects;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @Slf4j
-class AuthenticationControllerTest {
+class AuthenticationControllerIntegrationTest {
     @Autowired
     private AuthenticationController controller;
     private MockHttpServletRequest request;
