@@ -101,7 +101,7 @@ public class AuthenticationController {
     }
     @Operation(description = "Send reset token to email")
     @PostMapping("/forgot-password")
-    public ApiResponse forgotPassword(@RequestParam("email") @Email String email) throws MessagingException, ResourceNotFoundException {
+    public ApiResponse forgotPassword(@RequestParam("email") @Email String email) throws ResourceNotFoundException {
         log.info("Sending reset token to email {}", email);
         userService.sendResetTokenToEmail(email);
         return new ApiResponse(ACCEPTED.value(), Translator.toLocale("user-forgot-password-success"));

@@ -1,5 +1,6 @@
 package com.service.api.form;
 
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 @Data
+@Builder
 public class UserForm {
     Long id;
     @NotNull(message = "Email can not null")

@@ -6,17 +6,14 @@ import com.service.api.response.ApiResponse;
 import com.service.api.response.ErrorResponse;
 import com.service.api.response.PageResponse;
 import com.service.config.Translator;
-import com.service.dto.UserDTO;
 import com.service.exception.ResourceNotFoundException;
 import com.service.model.AppUser;
 import com.service.service.UserService;
 import com.service.util.ApiConst;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
@@ -26,19 +23,17 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j(topic = "USER_CONTROLLER")
 @Tag(name = "User Controller")
-@RequiredArgsConstructor
 @Validated
 public class UserController {
-    private final ModelMapper modelMapper;
-    private final PasswordEncoder encoder;
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PasswordEncoder encoder;
 
     @Operation(description = "Get all of user information")
     @GetMapping(headers = ApiConst.API_VERSION_1)
@@ -48,27 +43,18 @@ public class UserController {
             @RequestParam(name = "pageSize", defaultValue = "20") int _pageSize) {
         log.info("Request api GET api/v1/users");
 
-        Page<AppUser> users;
+        PageResponse response;
         if (StringUtils.hasLength(_search)) {
-            users = userService.searchByName(_search, _pageNo, _pageSize);
+            response = userService.searchByName(_search, _pageNo, _pageSize);
         } else {
-            users = userService.findAll(_pageNo, _pageSize);
+            response = userService.findAll(_pageNo, _pageSize);
         }
-
-        List<UserDTO> userDTOs = users.getContent().stream().map(i -> modelMapper.map(i, UserDTO.class)).collect(Collectors.toList());
-        PageResponse view = PageResponse.builder()
-                .pageNo(_pageNo)
-                .pageSize(_pageSize)
-                .total(users.getTotalElements())
-                .items(userDTOs)
-                .build();
-
-        return new ApiResponse(HttpStatus.OK.value(), "users", view);
+        return new ApiResponse(HttpStatus.OK.value(), "users", response);
     }
 
     @Operation(description = "Get user information")
     @GetMapping(path = "/{id}", headers = ApiConst.API_VERSION_1)
-    public ApiResponse getUser(@PathVariable("id") @Min(1) Integer _id) throws ResourceNotFoundException {
+    public ApiResponse getUser(@PathVariable("id") @Min(1) Long _id) throws ResourceNotFoundException {
         log.info("Request api GET api/v1/users/{}", _id);
         AppUser user = userService.getUserById(_id);
         return new ApiResponse(HttpStatus.OK.value(), "user", user);

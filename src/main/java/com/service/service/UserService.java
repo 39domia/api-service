@@ -1,6 +1,8 @@
 package com.service.service;
 
+import com.service.api.response.PageResponse;
 import com.service.config.Translator;
+import com.service.dto.UserDTO;
 import com.service.exception.ResourceNotFoundException;
 import com.service.model.AppUser;
 import com.service.model.Token;
@@ -66,12 +68,25 @@ public class UserService implements UserDetailsService {
      * @param pageSize page size
      * @return list of user
      */
-    public Page<AppUser> findAll(int pageNo, int pageSize) {
+    public PageResponse findAll(int pageNo, int pageSize) {
         log.info("Fetching all users from the database");
 
         if (pageNo > 0) pageNo = pageNo - 1;
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        return userRepo.findAll(pageable);
+
+        Page<AppUser> users = userRepo.findAll(pageable);
+        List<UserDTO> userDTOs = users.getContent().stream().map(x -> UserDTO.builder()
+                .username(x.getUsername())
+                .password(x.getPassword())
+                .build()).collect(Collectors.toList());
+        PageResponse response = PageResponse.builder()
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .total(users.getTotalElements())
+                .items(userDTOs)
+                .build();
+
+        return response;
     }
 
     /**
@@ -80,12 +95,25 @@ public class UserService implements UserDetailsService {
      * @param pageSize page size
      * @return list of user
      */
-    public Page<AppUser> searchByName(String keyword, int pageNo, int pageSize) {
+    public PageResponse searchByName(String keyword, int pageNo, int pageSize) {
         log.info("Searching user from the database");
 
         if (pageNo > 0) pageNo = pageNo - 1;
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        return userRepo.searchByName(keyword, pageable);
+
+        Page<AppUser> users = userRepo.searchByName(keyword, pageable);
+        List<UserDTO> userDTOs = users.getContent().stream().map(x -> UserDTO.builder()
+                .username(x.getUsername())
+                .password(x.getPassword())
+                .build()).collect(Collectors.toList());
+        PageResponse response = PageResponse.builder()
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .total(users.getTotalElements())
+                .items(userDTOs)
+                .build();
+
+        return response;
     }
 
     /**
@@ -125,10 +153,11 @@ public class UserService implements UserDetailsService {
      * @param id user id
      * @throws ResourceNotFoundException not found exception
      */
-    public void delete(long id) throws ResourceNotFoundException {
+    public boolean delete(long id) throws ResourceNotFoundException {
         log.info("Deleting user {} from the database", id);
         getUserById(id);
         userRepo.deleteById(id);
+        return true;
     }
 
     /**
@@ -145,7 +174,7 @@ public class UserService implements UserDetailsService {
     /**
      * Send link confirm in order to reset password token to email
      *
-     * @param email     user's email
+     * @param email user's email
      * @throws ResourceNotFoundException
      * @throws MessagingException
      */
@@ -178,8 +207,8 @@ public class UserService implements UserDetailsService {
     /**
      * Reset old password and update new password
      *
-     * @param resetToken    reset token
-     * @param newPassword   new password
+     * @param resetToken  reset token
+     * @param newPassword new password
      */
     public void resetAndUpdatePassword(String resetToken, String newPassword) throws ResourceNotFoundException {
         Token token = tokenService.findByToken(resetToken);
