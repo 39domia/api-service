@@ -1,5 +1,6 @@
 package com.service.service;
 
+import com.service.api.form.UserForm;
 import com.service.api.response.PageResponse;
 import com.service.config.Translator;
 import com.service.dto.UserDTO;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.mail.MessagingException;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,8 @@ public class UserService implements UserDetailsService {
     private TokenService tokenService;
     @Autowired
     private MailService mailService;
+    @Autowired
+    private PasswordEncoder encoder;
 
 
     @Override
@@ -106,14 +110,13 @@ public class UserService implements UserDetailsService {
                 .username(x.getUsername())
                 .password(x.getPassword())
                 .build()).collect(Collectors.toList());
-        PageResponse response = PageResponse.builder()
+
+        return PageResponse.builder()
                 .pageNo(pageNo)
                 .pageSize(pageSize)
                 .total(users.getTotalElements())
                 .items(userDTOs)
                 .build();
-
-        return response;
     }
 
     /**
@@ -148,35 +151,74 @@ public class UserService implements UserDetailsService {
     }
 
     /**
+     * Save or update user
+     *
+     * @param form
+     * @return
+     * @throws ResourceNotFoundException
+     */
+    public long saveOrUpdate(UserForm form) throws ResourceNotFoundException {
+        log.info("Saving user {} to the database", form.getUsername());
+
+        if (Objects.isNull(form.getId())) {
+            return userRepo.save(AppUser.builder()
+                    .email(form.getEmail())
+                    .username(form.getUsername())
+                    .password(encoder.encode(form.getPassword()))
+                    .createdDate(new Date())
+                    .build()).getId();
+        } else {
+            AppUser user = getUserById(form.getId());
+            if (!Objects.isNull(form.getUsername())) {
+                user.setUsername(form.getUsername());
+            }
+            if (!Objects.isNull(form.getPassword())) {
+                user.setPassword(encoder.encode(form.getPassword()));
+            }
+            return userRepo.save(user).getId();
+        }
+    }
+
+    /**
+     * Change password
+     *
+     * @param id
+     * @param password
+     * @throws ResourceNotFoundException
+     */
+    public long changePassword(Long id, String password) throws ResourceNotFoundException {
+        log.info("Changing password for user {} to the database", id);
+
+        AppUser user = getUserById(id);
+        if (!Objects.isNull(password)) {
+            user.setPassword(encoder.encode(password));
+        }
+        return userRepo.save(user).getId();
+    }
+
+    /**
      * Delete terminate user
      *
      * @param id user id
      * @throws ResourceNotFoundException not found exception
      */
-    public boolean delete(long id) throws ResourceNotFoundException {
+    public boolean delete(Long id) throws ResourceNotFoundException {
         log.info("Deleting user {} from the database", id);
-        getUserById(id);
-        userRepo.deleteById(id);
-        return true;
+
+        if (Objects.nonNull(id)) {
+            userRepo.deleteById(id);
+            return true;
+        }
+
+        return false;
     }
 
-    /**
-     * Save user
-     *
-     * @param user user information
-     * @return user
-     */
-    public AppUser save(AppUser user) {
-        log.info("Adding user {} to the database", user.getUsername());
-        return userRepo.save(user);
-    }
 
     /**
      * Send link confirm in order to reset password token to email
      *
      * @param email user's email
      * @throws ResourceNotFoundException
-     * @throws MessagingException
      */
     public void sendResetTokenToEmail(String email) throws ResourceNotFoundException {
         // get user by email

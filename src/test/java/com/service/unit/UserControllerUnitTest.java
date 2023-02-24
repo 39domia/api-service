@@ -6,7 +6,6 @@ import com.service.api.form.UserForm;
 import com.service.api.response.ApiResponse;
 import com.service.api.response.PageResponse;
 import com.service.dto.UserDTO;
-import com.service.exception.ResourceNotFoundException;
 import com.service.model.AppUser;
 import com.service.service.TokenService;
 import com.service.service.UserService;
@@ -25,7 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,6 +47,7 @@ class UserControllerUnitTest {
         headers = new HttpHeaders();
         headers.add("Api-Version", "1.0");
         headers.add("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzeXNhZG1pbiIsInJvbGVzIjpbIlNZU1RFTV9BRE1JTiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgxODEvYXBpL3YxL2F1dGgvbG9naW4iLCJleHAiOjM2MTY3NzA0NjUxMH0.ZonZHyP40b_9zfkBvULjJimXgt8_ZRoKv5hzRjsLa5U");
+        headers.add("Content-Type", "application/json");
     }
 
     @Test
@@ -74,7 +74,12 @@ class UserControllerUnitTest {
     void getUser() throws Exception {
         log.info("Testing API get user");
 
-        AppUser user = initUser();
+        AppUser user = AppUser.builder()
+                .id(1l)
+                .email("someone@email.com")
+                .username("someone")
+                .password("password")
+                .build();
         Mockito.when(userService.getUserById(1)).thenReturn(user);
         Mockito.when(userService.getByEmail(user.getEmail())).thenReturn(user);
 
@@ -85,42 +90,60 @@ class UserControllerUnitTest {
     }
 
     @Test
-    void updateUser() throws Exception {
-        log.info("Testing API update user");
-
-        AppUser user = initUser();
-        Mockito.when(userService.save(user)).thenReturn(user);
+    void createUser() throws Exception {
+        log.info("Testing API create user");
 
         UserForm form = UserForm.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .username("other")
-                .password(user.getPassword())
+                .email("someone@email.com")
+                .username("someone")
+                .password("password")
                 .build();
 
-//        mockMvc.perform(put("/users").headers(headers)
-//                .content(new Gson().toJson(form))
-//                .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk());
+        Mockito.when(userService.saveOrUpdate(form)).thenReturn(1l);
+
+        mockMvc.perform(post("/users").headers(headers).content(new Gson().toJson(form)))
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void changPassword() throws ResourceNotFoundException {
+    void updateUser() throws Exception {
+        log.info("Testing API update user");
+
+        UserForm form = UserForm.builder()
+                .id(1l)
+                .email("anyone@email.com")
+                .username("anyone")
+                .password("password")
+                .build();
+
+        Mockito.when(userService.saveOrUpdate(form)).thenReturn(1l);
+
+        mockMvc.perform(put("/users")
+                        .headers(headers)
+                        .content(new Gson().toJson(form)))
+                .andExpect(status().isAccepted());
+    }
+
+    @Test
+    void changPassword() throws Exception {
         log.info("Testing API change password");
+
+        Mockito.when(userService.changePassword(1l, "newPassword")).thenReturn(1l);
+
+        mockMvc.perform(patch("/users/change-password/{id}", 1l)
+                        .headers(headers)
+                        .param("password", "newPassword"))
+                .andExpect(status().isAccepted());
     }
 
     @Test
     void deleteUser() throws Exception {
         log.info("Testing API delete user");
-    }
 
-    private static AppUser initUser() {
-        return AppUser.builder()
-                .id(1l)
-                .email("someone@email.com")
-                .username("someone")
-                .password("password")
-                .build();
+        Mockito.when(userService.delete(1l)).thenReturn(true);
+
+        mockMvc.perform(delete("/users/{id}", 1l)
+                        .headers(headers))
+                .andExpect(status().isResetContent());
     }
 }
-

@@ -125,9 +125,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-            <!-- Building Java containers with Jib, we don't need to write a dockerfile -->
-            <!-- https://www.baeldung.com/jib-dockerizing -->
-            <!-- https://cloud.google.com/java/getting-started/jib -->
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>

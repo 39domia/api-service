@@ -8,9 +8,9 @@ server:
 
 api:
   info:
-    title: API Services
+    title: API Service
     description: API to fetch review details for application
-    version: 1.0.0
+    version: 1.0
     terms-of-service: https://company.com/terms/
     contact:
       name: SOFTWARE CO., LTD
