@@ -17,6 +17,29 @@
         <java.version>11</java.version>
         <image.path>registry.hub.docker.com/luongquoctay87</image.path>
     </properties>
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring.profiles.active>dev</spring.profiles.active>
+            </properties>
+        </profile>
+        <profile>
+            <id>test</id>
+            <properties>
+                <spring.profiles.active>test</spring.profiles.active>
+            </properties>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -125,9 +148,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-            <!-- Building Java containers with Jib, we don't need to write a dockerfile -->
-            <!-- https://www.baeldung.com/jib-dockerizing -->
-            <!-- https://cloud.google.com/java/getting-started/jib -->
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>

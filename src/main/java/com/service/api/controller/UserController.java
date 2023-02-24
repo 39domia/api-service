@@ -14,15 +14,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import java.util.Date;
+
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/users")
@@ -32,32 +31,30 @@ import java.util.Date;
 public class UserController {
     @Autowired
     private UserService userService;
-    @Autowired
-    private PasswordEncoder encoder;
 
     @Operation(description = "Get all of user information")
     @GetMapping(headers = ApiConst.API_VERSION_1)
     public ApiResponse getUserList(
-            @RequestParam(name = "search", required = false) String _search,
-            @RequestParam(name = "pageNo", defaultValue = "1") int _pageNo,
-            @RequestParam(name = "pageSize", defaultValue = "20") int _pageSize) {
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "pageNo", defaultValue = "1") int pageNo,
+            @RequestParam(name = "pageSize", defaultValue = "20") int pageSize) {
         log.info("Request api GET api/v1/users");
 
         PageResponse response;
-        if (StringUtils.hasLength(_search)) {
-            response = userService.searchByName(_search, _pageNo, _pageSize);
+        if (StringUtils.hasLength(search)) {
+            response = userService.searchByName(search, pageNo, pageSize);
         } else {
-            response = userService.findAll(_pageNo, _pageSize);
+            response = userService.findAll(pageNo, pageSize);
         }
-        return new ApiResponse(HttpStatus.OK.value(), "users", response);
+        return new ApiResponse(OK, "users", response);
     }
 
     @Operation(description = "Get user information")
     @GetMapping(path = "/{id}", headers = ApiConst.API_VERSION_1)
-    public ApiResponse getUser(@PathVariable("id") @Min(1) Long _id) throws ResourceNotFoundException {
-        log.info("Request api GET api/v1/users/{}", _id);
-        AppUser user = userService.getUserById(_id);
-        return new ApiResponse(HttpStatus.OK.value(), "user", user);
+    public ApiResponse getUser(@PathVariable("id") @Min(1) Long id) throws ResourceNotFoundException {
+        log.info("Request api GET api/v1/users/{}", id);
+        AppUser user = userService.getUserById(id);
+        return new ApiResponse(OK, "user", user);
     }
 
     @Operation(description = "Create new user")
@@ -66,52 +63,40 @@ public class UserController {
     public ApiResponse createUser(@Valid @RequestBody UserForm form) {
         log.info("Request api POST api/v1/users");
 
-        AppUser user = AppUser.builder()
-                .email(form.getEmail())
-                .username(form.getUsername())
-                .password(encoder.encode(form.getPassword()))
-                .createdDate(new Date())
-                .build();
-
         try {
-            userService.save(user);
-            return new ApiResponse(HttpStatus.CREATED.value(), Translator.toLocale("user-add-success"), user.getId());
+            long userId = userService.saveOrUpdate(form);
+            return new ApiResponse(CREATED, Translator.toLocale("user-add-success"), userId);
         } catch (Exception e) {
             log.error("Can not create user");
-            return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), Translator.toLocale("user-add-fail"));
+            return new ErrorResponse(BAD_REQUEST, Translator.toLocale("user-add-fail"));
         }
     }
 
     @Operation(description = "Update user information")
     @PutMapping(headers = ApiConst.API_VERSION_1)
     public ApiResponse updateUser(@Valid @RequestBody UserForm form) throws ResourceNotFoundException {
-        log.info("Request api PUT api/v1/users/{}", form.getId());
+        log.info("Request api PUT api/v1/users");
 
-        AppUser user = userService.getUserById(form.getId());
-        user.setUsername(form.getUsername());
-        userService.save(user);
-        return new ApiResponse(HttpStatus.OK.value(), Translator.toLocale("user-update-success"));
+        userService.saveOrUpdate(form);
+        return new ApiResponse(ACCEPTED, Translator.toLocale("user-update-success"));
+    }
+
+    @Operation(description = "Change password")
+    @PatchMapping(path = "/change-password/{id}", headers = ApiConst.API_VERSION_1)
+    public ApiResponse changPassword(@PathVariable("id") @Min(1) Long id, @RequestParam("password") String password) throws ResourceNotFoundException {
+        log.info("Request api PATCH api/v1/users/changePassword/{}", id);
+
+        userService.changePassword(id, password);
+        return new ApiResponse(ACCEPTED, Translator.toLocale("user-change-password-success"));
     }
 
     // @PreAuthorize("hasAuthority('SYSTEM_ADMIN')")
     @Operation(description = "Delete user permanently")
     @DeleteMapping(path = "/{id}", headers = ApiConst.API_VERSION_1)
-    public ApiResponse deleteUser(@PathVariable(value = "id") @Min(1) Long _id) throws ResourceNotFoundException {
-        log.info("Request api DELETE api/v1/users/{}", _id);
+    public ApiResponse deleteUser(@PathVariable(value = "id") @Min(1) Long id) throws ResourceNotFoundException {
+        log.info("Request api DELETE api/v1/users/{}", id);
 
-        userService.delete(_id);
-        return new ApiResponse(HttpStatus.OK.value(), Translator.toLocale("user-delete-success"));
+        userService.delete(id);
+        return new ApiResponse(RESET_CONTENT, Translator.toLocale("user-delete-success"));
     }
-
-    @Operation(description = "Change password")
-    @PatchMapping(path = "/change-password/{id}", headers = ApiConst.API_VERSION_1)
-    public ApiResponse changPassword(@PathVariable("id") @Min(1) Long _id, @RequestParam("password") String password) throws ResourceNotFoundException {
-        log.info("Request api PATCH api/v1/users/changePassword/{}", _id);
-
-        AppUser user = userService.getUserById(_id);
-        user.setPassword(encoder.encode(password));
-        userService.save(user);
-        return new ApiResponse(HttpStatus.OK.value(), Translator.toLocale("user-change-password-success"));
-    }
-
 }

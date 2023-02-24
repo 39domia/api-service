@@ -10,13 +10,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
 
 import static com.service.util.ApiConst.API_VERSION_1;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping("/commons")
@@ -34,7 +35,7 @@ public class CommonController {
         log.info("Request api POST api/v1/commons/upload");
 
         FileDTO fileDTO = uploadService.uploadFile(file);
-        return new ApiResponse(HttpStatus.OK.value(), Translator.toLocale("file-upload-success"), fileDTO);
+        return new ApiResponse(OK, Translator.toLocale("file-upload-success"), fileDTO);
     }
 
     @Operation(description = "Send email to someone")
@@ -43,6 +44,6 @@ public class CommonController {
         log.info("Request api POST api/v1/commons/send-email");
 
         mailService.sendEmail(form.getFrom(), form.getTo(), form.getSubject(), form.getBody(), form.getFile());
-        return new ApiResponse(HttpStatus.OK.value(), Translator.toLocale("file-upload-success"));
+        return new ApiResponse(NO_CONTENT, Translator.toLocale("file-upload-success"));
     }
 }

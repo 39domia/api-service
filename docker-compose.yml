@@ -32,32 +32,32 @@ services:
     networks:
       - default
 
-  prometheus:
-    image: "prom/prometheus"
-    container_name: prometheus
-    restart: unless-stopped
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - '9090:9090'
-    networks:
-      - default
-
-  grafana:
-    image: "grafana/grafana"
-    container_name: grafana
-    restart: unless-stopped
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=password
-    ports:
-      - '3000:3000'
-    links:
-      - prometheus:prometheus
-    volumes:
-      - grafana:/var/lib/grafana
-    networks:
-      - default
+#  prometheus:
+#    image: "prom/prometheus"
+#    container_name: prometheus
+#    restart: unless-stopped
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - '9090:9090'
+#    networks:
+#      - default
+#
+#  grafana:
+#    image: "grafana/grafana"
+#    container_name: grafana
+#    restart: unless-stopped
+#    environment:
+#      - GF_SECURITY_ADMIN_USER=admin
+#      - GF_SECURITY_ADMIN_PASSWORD=password
+#    ports:
+#      - '3000:3000'
+#    links:
+#      - prometheus:prometheus
+#    volumes:
+#      - grafana:/var/lib/grafana
+#    networks:
+#      - default
 
 networks:
   default:
@@ -65,4 +65,4 @@ networks:
 
 volumes:
   postgres:
-  grafana:
+#  grafana:

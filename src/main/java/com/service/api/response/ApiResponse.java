@@ -12,8 +12,8 @@ public class ApiResponse extends ResponseEntity<ApiResponse.Payload> {
      * @param status status code
      * @param message status code message
      */
-    public ApiResponse(int status, String message) {
-        super(new Payload(status, message, null), HttpStatus.OK);
+    public ApiResponse(HttpStatus status, String message) {
+        super(new Payload(status.value(), message, null), status);
     }
 
     /**
@@ -22,8 +22,8 @@ public class ApiResponse extends ResponseEntity<ApiResponse.Payload> {
      * @param message status code message
      * @param data data response
      */
-    public ApiResponse(int status, String message, Object data) {
-        super(new Payload(status, message, data), HttpStatus.valueOf(status));
+    public ApiResponse(HttpStatus status, String message, Object data) {
+        super(new Payload(status.value(), message, data), status);
     }
 
     @Value

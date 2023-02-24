@@ -27,17 +27,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Email;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.service.util.ApiConst.*;
+import static com.service.util.ApiConst.USER_ROLE;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpStatus.ACCEPTED;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -104,7 +102,7 @@ public class AuthenticationController {
     public ApiResponse forgotPassword(@RequestParam("email") @Email String email) throws ResourceNotFoundException {
         log.info("Sending reset token to email {}", email);
         userService.sendResetTokenToEmail(email);
-        return new ApiResponse(ACCEPTED.value(), Translator.toLocale("user-forgot-password-success"));
+        return new ApiResponse(ACCEPTED, Translator.toLocale("user-forgot-password-success"));
     }
 
     @Operation(description = "Reset password by short token and new password")
@@ -112,6 +110,6 @@ public class AuthenticationController {
     public ApiResponse resetPassword(@RequestParam("token") String resetToken, @RequestParam("newPassword") String newPassword) throws ResourceNotFoundException {
         log.info("Processing reset and update new password for token {}", resetToken);
         userService.resetAndUpdatePassword(resetToken, newPassword);
-        return new ApiResponse(OK.value(), Translator.toLocale("user-change-password-success"));
+        return new ApiResponse(RESET_CONTENT, Translator.toLocale("user-change-password-success"));
     }
 }

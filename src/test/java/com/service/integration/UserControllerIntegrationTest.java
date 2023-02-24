@@ -64,7 +64,7 @@ class UserControllerIntegrationTest {
         log.info("Integrating API update user");
 
         ApiResponse apiResponse = userController.updateUser(UserForm.builder().id(USER_ID).email("other@email.com").username("other").build());
-        Assertions.assertEquals(200, apiResponse.getStatusCode().value());
+        Assertions.assertEquals(202, apiResponse.getStatusCode().value());
     }
 
     @Test
@@ -72,7 +72,7 @@ class UserControllerIntegrationTest {
         log.info("Integrating API change password");
 
         ApiResponse apiResponse = userController.changPassword(USER_ID, "password");
-        Assertions.assertEquals(200, apiResponse.getStatusCode().value());
+        Assertions.assertEquals(202, apiResponse.getStatusCode().value());
     }
 
     @Test
@@ -80,6 +80,6 @@ class UserControllerIntegrationTest {
         log.info("Integrating API delete user");
 
         ApiResponse apiResponse = userController.deleteUser(USER_ID);
-        Assertions.assertEquals(200, apiResponse.getStatusCode().value());
+        Assertions.assertEquals(205, apiResponse.getStatusCode().value());
     }
 }
