@@ -1,4 +1,4 @@
-# SAMPLE APPLICATION
+# API SERVICE
 ![Software Architecture](Software Architecture.png)
 
 ## I. Local Environment
@@ -24,6 +24,7 @@
 3.1 build project
 ```
 $ mvn clean install
+$ mvn clean install -Pdev
 ```
 3.2 build docker images
 ```
@@ -42,17 +43,22 @@ Visit [API-Service Health](http://localhost:8181/api/v1/actuator)
 $ mvn clean install
 $ docker-compose up -d --build
 ```
+3.6 Run by IntelliJ IDE
+- Set up Environment variable before run application
+```
+$ spring.profiles.active=dev
+```
 
-3.6 View application log
+3.7 View application log
 ```
 $ docker-compose logs -tf api-service
 ```
 
-3.7 Remote Debug
+3.8 Remote Debug
 - Connect port 5005
 - Run Debug Mote
 
-3.8 Log and Monitoring Application
+3.9 Log and Monitoring Application
 - Monitoring and alert: [Prometheus Target](http://localhost:9090/targets)
 - Prometheus web UI: [Prometheus Graph](http://localhost:9090/graph)
 - Sign in grafana with account set in .env file: web UI: [Grafana](http://localhost:3000)
